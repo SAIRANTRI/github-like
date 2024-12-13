@@ -1,20 +1,91 @@
-import React from 'react'
-import Search from '../components/Search.jsx'
-import SortRepos from '../components/SortRepos.jsx'
-import ProfileInfo from '../components/ProfileInfo.jsx'
-import Repos from '../components/Repos.jsx'
+import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+
+import ProfileInfo from "../components/ProfileInfo";
+import Repos from "../components/Repos";
+import Search from "../components/Search";
+import SortRepos from "../components/SortRepos";
+import Spinner from "../components/Spinner";
 
 const HomePage = () => {
-  return (
-    <div className='m-4'>
-      <Search/>
-      <SortRepos/>
-      <div className='flex gap-4 flex-col lg:flex-riw justify-center items-start my-2'>
-        <ProfileInfo/>
-        <Repos/>
-        </div>
-    </div>
-  )
-}
+	const [userProfile, setUserProfile] = useState(null);
+	const [repos, setRepos] = useState([]);
+	const [loading, setLoading] = useState(false);
 
-export default HomePage
+	const [sortType, setSortType] = useState("recent");
+
+	const getUserProfileAndRepos = useCallback(async (username = "SAIRANTRI") => {
+    setLoading(true);
+    try {
+        // Fetch user profile
+        const userProfileRes = await fetch(`https://api.github.com/users/${username}`, {
+          headers: {
+            authorization: `token ${import.meta.env.VITE_GITHUB_API_KEY} `
+          }
+        });
+        const userProfile = await userProfileRes.json();
+
+        // Fetch repositories
+        const reposRes = await fetch(`https://api.github.com/users/${username}/repos`);
+        const repos = await reposRes.json();
+
+        // Sort repositories by creation date (recent first)
+        repos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        setUserProfile(userProfile);
+        setRepos(repos);
+
+        return { userProfile, repos };
+    } catch (error) {
+        toast.error(error.message);
+    } finally {
+        setLoading(false);
+    }
+}, []);
+
+
+	useEffect(() => {
+		getUserProfileAndRepos();
+	}, [getUserProfileAndRepos]);
+
+	const onSearch = async (e, username) => {
+		e.preventDefault();
+
+		setLoading(true);
+		setRepos([]);
+		setUserProfile(null);
+
+		const { userProfile, repos } = await getUserProfileAndRepos(username);
+
+		setUserProfile(userProfile);
+		setRepos(repos);
+		setLoading(false);
+		setSortType("recent");
+	};
+
+	const onSort = (sortType) => {
+		if (sortType === "recent") {
+			repos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); //descending, recent first
+		} else if (sortType === "stars") {
+			repos.sort((a, b) => b.stargazers_count - a.stargazers_count); //descending, most stars first
+		} else if (sortType === "forks") {
+			repos.sort((a, b) => b.forks_count - a.forks_count); //descending, most forks first
+		}
+		setSortType(sortType);
+		setRepos([...repos]);
+	};
+
+	return (
+		<div className='m-4'>
+			<Search onSearch={onSearch} />
+			{repos.length > 0 && <SortRepos onSort={onSort} sortType={sortType} />}
+			<div className='flex gap-4 flex-col lg:flex-row justify-center items-start'>
+				{userProfile && !loading && <ProfileInfo userProfile={userProfile} />}
+
+				{!loading && <Repos repos={repos} />}
+				{loading && <Spinner />}
+			</div>
+		</div>
+	);
+};
+export default HomePage;
