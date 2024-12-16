@@ -4,6 +4,7 @@ import cors from "cors";
 
 import userRoutes from "./routes/user.route.js";
 import exploreRoutes from "./routes/explore.route.js";
+import connectMongoDB from "./db/connectMongoDB.js";
 
 const app = express();
 
@@ -18,4 +19,7 @@ app.get("/", (req, res) => {
 app.use("/api/users", userRoutes);
 app.use("/api/explore", exploreRoutes);
 
-app.listen(5000, () => console.log("Server started on port 5000"));
+app.listen(5000, () => { 
+    console.log("Server started on port 5000");
+    connectMongoDB();
+});
