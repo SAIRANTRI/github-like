@@ -8,6 +8,7 @@ import ExplorePage from "./pages/ExplorePage.jsx";
 import LikesPage from "./pages/LikesPage";
 
 import Sidebar from "./components/Sidebar";
+import { FaLessThanEqual } from "react-icons/fa";
 //import { useAuthContext } from "./context/AuthContext";
 
 function App() {
@@ -15,7 +16,7 @@ function App() {
 	// console.log("Authenticated user:", authUser);
 
 	// if (loading) return null;
-    const authUser = true;
+    const authUser = false;
 
 	return (
 		<div className='flex'>
