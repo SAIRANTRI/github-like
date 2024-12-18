@@ -4,19 +4,17 @@ import { Toaster } from "react-hot-toast";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import HomePage from "./pages/HomePage";
-import ExplorePage from "./pages/ExplorePage.jsx";
+import ExplorePage from "./pages/ExplorePage";
 import LikesPage from "./pages/LikesPage";
 
 import Sidebar from "./components/Sidebar";
-import { FaLessThanEqual } from "react-icons/fa";
-//import { useAuthContext } from "./context/AuthContext";
+import { useAuthContext } from "./context/AuthContext";
 
 function App() {
-	// const { authUser, loading } = useAuthContext();
-	// console.log("Authenticated user:", authUser);
+	const { authUser, loading } = useAuthContext();
+	console.log("Authenticated user:", authUser);
 
-	// if (loading) return null;
-    const authUser = false;
+	if (loading) return null;
 
 	return (
 		<div className='flex'>
